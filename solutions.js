@@ -136,7 +136,7 @@ Book.find({genres:"Fiction"}).skip(2).limit(3).exec().then(function(err, books){
 //======================================================
 //======================================================
 //======================================================
-Person.find((	{ height:{"$gt":180}, salary:{"$gt":30000}	})).then( function(err, people){
+Person.find(({ height:{"$gt":180}, salary:{"$gt":30000}	})).then( function(err, people){
 	
 })
 

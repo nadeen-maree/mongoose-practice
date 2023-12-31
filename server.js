@@ -14,13 +14,110 @@ var Person = require("./models/PersonModel")
 mongoose.connect("mongodb://127.0.0.1:27017/mongoose-practice", {
   useNewUrlParser: true,
 })
-.then(()=>console.log("conneted to DB"))
+.then(()=>console.log("connected to DB"))
 .catch((err)=> console.log(err))
 
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+app.get('/book1', function(req, res) {
+  Book.find({ pages: { $gt: 200, $lt: 500 } })
+    .then((books) => {
+      res.json(books)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching books')
+    })
+})
+
+app.get('/book2', function(req, res) {
+  Book.find({ rating: { $lt: 5 } }).sort({ author: 1 })
+    .then((books) => {
+      res.json(books)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching books')
+    })
+})
+
+app.get('/book3', function(req, res) {
+  Book.find({ genres: 'Fiction' }).skip(2).limit(3)
+    .then((books) => {
+      res.json(books)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching books')
+    })
+})
+
+
+app.get('/people1', function(req, res) {
+  Person.find(({ height:{"$gt":180}, salary:{"$gt":30000}	}))
+    .then((people) => {
+      res.json(people)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching people')
+    })
+})
+
+app.get('/people2', function(req, res) {
+  Person.find( { $or:[ {height:{"$gt":180}}, {salary:{"$gt":30000}}]})
+    .then((people) => {
+      res.json(people)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching people')
+    })
+})
+
+app.get('/people3', function(req, res) {
+  Person.find().and([
+    { $or: [{hair:"grey"}, {eyes:"grey"}] },
+    {	weight:{"$lt": 70}	}
+  ])
+    .exec()
+    .then((people) => {
+      res.json(people)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching people')
+    })
+})
+
+app.get('/people4', function(req, res) {
+  Person.find({kids:{$elemMatch:{hair:"grey"}}})
+    .exec()
+    .then((people) => {
+      res.json(people)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching people')
+    })
+})
+
+app.get('/people5', function(req, res) {
+  Person.find().and([
+    {weight: {"$gt":100}},
+    {kids:{$elemMatch:{weight: {"$gt":100}}}}
+  ])
+    .exec()
+    .then((people) => {
+      res.json(people)
+    })
+    .catch((err) => {
+      console.error(err)
+      res.status(500).send('Error fetching people')
+    })
+})
 
 /*=====================================================
 Create books Collection
@@ -35,36 +132,36 @@ for (var i = 0; i < isbns.length; i++) {
   for subsequent runs, re-comment it so that it runs only once!
   that said, there is a fail-safe to avoid duplicates below
   =======================================================*/
-  loadFromAPI(apiURL)
+ // loadFromAPI(apiURL)
 }
 console.log("done");
 
-function loadFromAPI(apiURL) {
+// function loadFromAPI(apiURL) {
 
-  request(apiURL, function(error, response, body) {
+//   request(apiURL, function(error, response, body) {
 
-    var result = JSON.parse(body)
+//     var result = JSON.parse(body)
 
-    if (result.totalItems && !error && response.statusCode == 200) {
-      var resBook = JSON.parse(body).items[0].volumeInfo
+//     if (result.totalItems && !error && response.statusCode == 200) {
+//       var resBook = JSON.parse(body).items[0].volumeInfo
 
-      var book = new Book({
-        title: resBook.title,
-        author: resBook.authors ? resBook.authors[0] : '',
-        pages: resBook.pageCount,
-        genres: resBook.categories || ["Other"],
-        rating: resBook.averageRating || 5
-      })
+//       var book = new Book({
+//         title: resBook.title,
+//         author: resBook.authors ? resBook.authors[0] : '',
+//         pages: resBook.pageCount,
+//         genres: resBook.categories || ["Other"],
+//         rating: resBook.averageRating || 5
+//       })
 
-      //Only save if the book doesn't exist yet
-      Book.findOne({ title: book.title }).then( function(err, foundBook) {
-        if (!foundBook) {
-          book.save()
-        }
-      })
-    }
-  })
-}
+//       //Only save if the book doesn't exist yet
+//       Book.findOne({ title: book.title }).then( function(err, foundBook) {
+//         if (!foundBook) {
+//           book.save()
+//         }
+//       })
+//     }
+//   })
+// }
 
 
 /*=====================================================
@@ -159,7 +256,6 @@ and your server is running do the following:
 //2. Find books whose rating is less than 5, and sort by the author's name
 
 //3. Find all the Fiction books, skip the first 2, and display only 3 of them
-
 
 /*People
 ----------------------*/
